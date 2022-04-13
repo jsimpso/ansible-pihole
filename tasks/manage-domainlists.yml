@@ -1,0 +1,20 @@
+---
+- name: Check for whitelist regex entries
+  ansible.builtin.shell: 'sqlite3 {{ pihole_config_path }}/gravity.db "SELECT domain FROM domainlist WHERE type IS 2"'
+  register: whitelist_regex
+  check_mode: no
+  changed_when: false
+
+- name: Remove unwanted whitelist regex entries
+  become: yes
+  ansible.builtin.shell: "sqlite3 {{ pihole_config_path }}/gravity.db \"DELETE FROM domainlist WHERE domain='{{ item }}'\""
+  when: item not in pihole_domains.whitelist_regex_domains
+  loop: "{{  whitelist_regex.stdout_lines  }}"
+  notify: pihole rebuild and sync
+
+- name: Add missing whitelist regex entries
+  become: yes
+  ansible.builtin.shell: "sqlite3 {{ pihole_config_path }}/gravity.db \"INSERT INTO domainlist (domain, type, enabled, comment) VALUES ('{{ item }}', 2, 1, 'Added by Ansible')\""
+  when: item not in whitelist_regex.stdout_lines
+  loop: "{{ pihole_domains.whitelist_regex_domains }}"
+  notify: pihole rebuild and sync

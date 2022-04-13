@@ -1,0 +1,22 @@
+---
+- name: Ensure sqlite3 is installed
+  become: yes
+  ansible.builtin.apt:
+    name: sqlite3
+    state: present
+    
+- name: Ensure DNS Stub Listener is disabled in systemd-resolved
+  become: yes
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/resolved.conf
+    regexp: '^DNSStubListener='
+    line: DNSStubListener=no
+  notify: restart systemd-resolved
+
+- name: Redirect resolv.conf symbolic link
+  become: yes
+  ansible.builtin.file:
+    src: /run/systemd/resolve/resolv.conf
+    dest: /etc/resolv.conf
+    state: link
+  notify: restart systemd-resolved

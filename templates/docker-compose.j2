@@ -1,0 +1,26 @@
+---
+version: "3.8"
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:{{ docker_pihole_tag }}
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "80:80/tcp"
+    environment:
+      TZ: 'Australia/Perth'
+      FTLCONF_REPLY_ADDR4: {{ ansible_host }}
+      FTLCONF_BLOCKINGMODE: "NULL"
+      PIHOLE_DNS_: 1.1.1.1;9.9.9.9
+      DNSSEC: true
+      VIRTUAL_HOST: {{ inventory_hostname_short }}
+      WEBTHEME: default-dark
+      DNS_FQDN_REQUIRED: true
+      DNS_BOGUS_PRIV: true
+      WEBPASSWORD: ''
+    volumes:
+      - '/opt/pihole/pihole:/etc/pihole/'
+      - '/opt/pihole/dnsmasq.d/:/etc/dnsmasq.d/'
+    restart: unless-stopped

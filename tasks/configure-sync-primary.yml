@@ -1,0 +1,21 @@
+- name: Add SSH Key to authorized_keys on primary to allow sync
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user }}"
+    state: present
+    key: "{{ lookup('file', 'id_rsa_pihole.pub') }}"
+    key_options: 'command="rsync --server --sender -vlogDtprze.iLsfxC . /etc/pihole/gravity.db",no-port-forwarding,no-pty'
+
+- name: Remove secondary files if present
+  become: yes
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/home/{{ ansible_user }}/.ssh/id_rsa_pihole"
+    - "/home/{{ ansible_user }}/.ssh/id_rsa_pihole.pub"
+    - /usr/local/bin/pihole-sync
+
+- name: Add cron job for sync script to any secondaries
+  ansible.builtin.cron:
+    name: Sync Pihole
+    state: absent

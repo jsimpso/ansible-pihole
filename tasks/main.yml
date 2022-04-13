@@ -1,0 +1,30 @@
+---
+- name: Deploy docker-pihole
+  include_tasks: deploy-docker-pihole.yml
+  when: deploy_docker_pihole
+
+- name: Configure pihole
+  include_tasks: configure-pihole.yml
+
+- name: Check if Pihole is enabled
+  ansible.builtin.lineinfile:
+    name: "{{ pihole_config_path }}/setupVars.conf"
+    line: "BLOCKING_ENABLED=true"
+    state: present
+  check_mode: yes
+  register: blocking_enabled
+
+- name: Enable pihole
+  ansible.builtin.shell: pihole enable
+  when: (blocking_enabled is changed) or (blocking_enabled is failed)
+
+- name: Manage adlists
+  include_tasks: manage-adlists.yml
+  when: inventory_hostname == pihole_primary
+
+- name: Manage domainlists
+  include_tasks: manage-domainlists.yml
+  when: inventory_hostname == pihole_primary
+  
+- name: Configure sync
+  include_tasks: configure-sync.yml

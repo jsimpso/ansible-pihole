@@ -1,0 +1,12 @@
+#!/bin/bash
+## This file is managed by ansible
+
+set -eu
+
+USER={{ ansible_user }}
+PRIMARY={{ pihole_primary }}
+PRIMARY_CONFIG_PATH={{ hostvars[pihole_primary]['pihole_config_path'] }}
+LOCAL_CONFIG_PATH={{ pihole_config_path }}
+
+rsync -avz -e "ssh -i /home/${USER}/.ssh/id_rsa_pihole" ${USER}@${PRIMARY}:${PRIMARY_CONFIG_PATH}/gravity.db ${LOCAL_CONFIG_PATH}/gravity.db
+/usr/local/bin/pihole restartdns reload-lists

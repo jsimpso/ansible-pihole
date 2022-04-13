@@ -1,0 +1,8 @@
+---
+- name: Configure primary
+  include_tasks: configure-sync-primary.yml
+  when: inventory_hostname == pihole_primary
+
+- name: Configure secondary
+  include_tasks: configure-sync-secondary.yml
+  when: inventory_hostname != pihole_primary

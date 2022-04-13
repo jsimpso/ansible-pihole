@@ -1,0 +1,18 @@
+---
+pihole_role: secondary
+pihole_config_path: /etc/pihole
+dnsmasq_config_path: /etc/dnsmasq.d
+docker_pihole_tag: latest
+docker_pihole_root: /opt/pihole
+docker_pihole_config: "{{ docker_pihole_root }}/pihole"
+docker_dnsmasq_config: "{{ docker_pihole_root }}/dnsmasq.d"
+
+deploy_docker_pihole: false
+docker_pihole_directories:
+  - "{{ docker_pihole_root }}"
+  - "{{ docker_pihole_config }}"
+  - "{{ docker_dnsmasq_config }}"
+
+pihole_adlists:
+  - https://dbl.oisd.nl/
+  - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts

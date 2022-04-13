@@ -1,0 +1,20 @@
+---
+- name: Check for adlists
+  ansible.builtin.shell: 'sqlite3 {{ pihole_config_path }}/gravity.db "SELECT address FROM adlist"'
+  register: adlists
+  check_mode: no
+  changed_when: false
+
+- name: Remove unwanted adlists
+  become: yes
+  ansible.builtin.shell: "sqlite3 {{ pihole_config_path }}/gravity.db \"DELETE FROM adlist WHERE address='{{ item }}'\""
+  when: item not in pihole_adlists
+  loop: "{{  adlists.stdout_lines  }}"
+  notify: pihole rebuild and sync
+
+- name: Add missing adlists
+  become: yes
+  ansible.builtin.shell: "sqlite3 {{ pihole_config_path }}/gravity.db \"INSERT INTO adlist (address, enabled, comment) VALUES ('{{ item }}', 1, 'Added by Ansible')\""
+  when: item not in adlists.stdout_lines
+  loop: "{{ pihole_adlists }}"
+  notify: pihole rebuild and sync

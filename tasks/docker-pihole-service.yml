@@ -1,0 +1,19 @@
+---
+- name: Copy service file
+  become: yes
+  ansible.builtin.copy:
+    src: pihole.service
+    dest: /etc/systemd/system/pihole.service
+  notify:
+    - restart docker-pihole
+
+- name: Ensure handlers are notified now to avoid logic conflicts.
+  meta: flush_handlers
+  
+- name: Start service
+  become: yes
+  ansible.builtin.systemd: 
+    state: started 
+    name: pihole
+    enabled: yes 
+    daemon_reload: yes

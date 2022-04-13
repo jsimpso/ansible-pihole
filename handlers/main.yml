@@ -1,0 +1,32 @@
+---
+- name: restart docker-pihole
+  become: yes
+  ansible.builtin.service:
+    name: pihole
+    state: restarted
+
+- name: restart systemd-resolved
+  become: yes
+  ansible.builtin.service:
+    name: systemd-resolved
+    state: restarted
+
+- name: restart pihole dns
+  become: yes
+  ansible.builtin.shell:
+    cmd: pihole restartdns
+
+- name: pihole rebuild gravity
+  become: yes
+  ansible.builtin.shell:
+    cmd: pihole -g
+  listen: "pihole rebuild and sync"
+
+- name: pihole sync
+  become: yes
+  ansible.builtin.shell:
+    cmd: pihole-sync
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['pihole'] }}"
+  when: item != pihole_primary
+  listen: "pihole rebuild and sync"

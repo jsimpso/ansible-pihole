@@ -1,0 +1,30 @@
+---
+- name: Perform pre-requisite tasks
+  include_tasks: docker-pihole-setup-Ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Ensure pihole directories exist
+  become: yes
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  loop: "{{ docker_pihole_directories }}"
+
+- name: Deploy docker-compose file
+  become: yes
+  ansible.builtin.template:
+    src: templates/docker-compose.j2
+    dest: /opt/pihole/docker-compose.yml
+    mode: 0644
+  notify:
+    restart docker-pihole
+
+- name: Configure systemd service for docker-pihole
+  include_tasks: docker-pihole-service.yml
+
+- name: Deploy docker-pihole command wrapper
+  become: yes
+  ansible.builtin.copy:
+    src: docker_pihole_command_wrapper.sh
+    dest: /usr/local/bin/pihole
+    mode: 0755

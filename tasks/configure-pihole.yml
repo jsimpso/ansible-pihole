@@ -1,0 +1,16 @@
+---
+- name: Deploy pihole config files
+  become: yes
+  ansible.builtin.copy:
+    src: pihole_config_files/
+    dest: "{{ pihole_config_path }}"
+    mode: 0644
+  notify: restart pihole dns
+
+- name: Deploy dnsmasq config files
+  become: yes
+  ansible.builtin.copy:
+    src: dnsmasq_config_files/
+    dest: "{{ dnsmasq_config_path }}"
+    mode: 0644
+  notify: restart pihole dns
